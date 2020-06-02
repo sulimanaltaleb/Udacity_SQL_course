@@ -1,0 +1,861 @@
+Postgres
+psycopg2
+	psycopg2 is a database adapter that allows us to interact with a Postgres database from Python.
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+Manipulating Data	
+	INSERT
+			INSERT INTO table(column1, column2, …)
+			VALUES
+				(value1, value2, …);
+
+			INSERT INTO table (column1, column2, …)
+			VALUES
+				(value1, value2, …),
+				(value1, value2, …) ,...;
+
+			INSERT INTO table(column1,column2,...)
+			SELECT column1,column2,...
+			FROM another_table
+			WHERE condition;
+
+			CREATE TABLE link (
+				ID serial PRIMARY KEY,
+				url VARCHAR (255) NOT NULL,
+				name VARCHAR (255) NOT NULL,
+				description VARCHAR (255),
+				rel VARCHAR (50)
+			);
+			
+			INSERT INTO link (url, name)
+			VALUES
+				('https://www.postgresqltutorial.com','PostgreSQL Tutorial');
+			
+			SELECT
+				*
+			FROM
+				link;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/postgresql-insert-example.png
+
+			INSERT INTO link (url, name)
+			VALUES
+				('http://www.oreilly.com','O''Reilly Media');
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/postgresql-insert-string-with-single-quote.png
+
+			INSERT INTO link (url, name)
+			VALUES
+			 ('http://www.google.com','Google'),
+			 ('http://www.yahoo.com','Yahoo'),
+			 ('http://www.bing.com','Bing');
+			 https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/postgresql-insert-multiple-rows.png
+
+			ALTER TABLE link ADD COLUMN last_update DATE;
+
+			ALTER TABLE link ALTER COLUMN last_update
+			SET DEFAULT CURRENT_DATE;
+			
+			INSERT INTO link (url, name, last_update)
+			VALUES
+				('http://www.facebook.com','Facebook','2013-06-01');
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/postgresql-insert-date-example.png
+
+			INSERT INTO link (url, name, last_update)
+			VALUES
+				('https://www.tumblr.com/','Tumblr',DEFAULT);
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/postgresql-insert-date-with-default-keyword.png
+
+			CREATE TABLE link_tmp (LIKE link);
+			INSERT INTO link_tmp 
+			SELECT
+				*
+			FROM
+				link
+			WHERE
+				last_update IS NOT NULL;
+			
+			SELECT
+				*
+			FROM
+				link_tmp;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-insert-into-select-example.png
+
+			INSERT INTO link (url, NAME, last_update)
+			VALUES('http://www.postgresql.org','PostgreSQL',DEFAULT) 
+			RETURNING id;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-last-insert-id.png
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-Insert-example-with-last-insert-id.png
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	UPDATE
+			UPDATE table
+			SET column1 = value1,
+			    column2 = value2 ,...
+			WHERE
+				condition;
+
+			SELECT
+				*
+			FROM
+				link;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-Insert-example-with-last-insert-id.png
+
+			UPDATE link
+			SET last_update = DEFAULT
+			WHERE
+				last_update IS NULL;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-update-table-partially.png
+
+			UPDATE link
+			SET rel = 'nofollow';
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-update-all-rows.png
+
+			UPDATE link
+			SET description = name;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-update-values-same-table.png
+
+			The following statement updates values that come from the link table for the columns in the link_tmp table:
+			UPDATE link_tmp
+			SET rel = link.rel,
+			 description = link.description,
+			 last_update = link.last_update
+			FROM
+				link
+			WHERE
+				link_tmp.id = link.id;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-UPDATE-JOIN.png	
+
+			UPDATE link
+			SET description = 'Learn PostgreSQL fast and easy',
+			 rel = 'follow'
+			WHERE
+				ID = 1 
+			RETURNING id,
+				description,
+				rel;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-UPDATE-RETURNING.png
+
+			SELECT
+				*
+			FROM
+				link
+			WHERE
+				ID = 1;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-link-table-with-id-1.png
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	DELETE
+			DELETE FROM table
+			WHERE condition;
+
+			DELETE FROM table
+			USING another_table
+			WHERE table.id = another_table.id AND …
+
+			DELETE FROM table
+			WHERE table.id = (SELECT id FROM another_table);
+
+			SELECT
+			   *
+			FROM
+			   link;
+
+			DELETE FROM link
+			WHERE id = 8;
+
+			SELECT
+			    *
+			FROM
+			    link_tmp;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/link_tmp-table1.png
+
+			DELETE FROM link 
+			USING link_tmp
+			WHERE
+			    link.id = link_tmp.id;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-DELETE-USING-example.png
+
+			To delete all rows from the link table, you omit the WHEREclause in the DELETEstatement as follows:
+			DELETE FROM link;
+
+			To delete all rows in the link_tmptable and return the deleted rows, you use the RETURNING clause in the DELETEstatement as follows:
+			DELETE FROM link_tmp 
+			RETURNING *;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/06/PostgreSQL-delete-table-RETURNING.png
+***********************************************************************************************************************************************************
+Querying Data
+	SELECT
+
+			SELECT
+			   select_list
+			FROM
+			   table_name;
+
+			SELECT 
+			   first_name
+			FROM 
+			   customer;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/05/postgresql-select-one-column-example.png
+
+			SELECT
+			   first_name,
+			   last_name,
+			   email
+			FROM
+			   customer;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/05/postgresql-select-customer.png
+
+			SELECT
+			   *
+			FROM
+			   customer;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/05/postgresql-select-all-data-from-customer-table.png
+
+			The following example uses the SELECT statement to return the full names and emails of all customers:
+			SELECT 
+			   first_name || ' ' || last_name AS full_name,
+			   email
+			FROM 
+			   customer;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/05/postgresql-select-with-expression-example.png
+
+			SELECT 5 * 3 AS result;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/05/postgresql-select-with-an-expression-only.png
+*******************************************************************************************************************************************
+Structuring Data
+			CREATE TABLE
+
+			CREATE TABLE table_name (
+				column_name TYPE column_constraint,
+				table_constraint table_constraint
+			) INHERITS existing_table_name;
+
+			TYPE
+				Boolean
+					A Boolean data type can hold one of three possible values: true, false or null. You use boolean or bool keyword to declare a column with the Boolean data type.
+					When you insert data into a Boolean column, PostgreSQL converts it to a Boolean value
+					1, yes, y, t, true values are converted to true
+					0, no, false, f values are converted to false.
+
+				Character types such as char, varchar, and text.
+					PostgreSQL provides three character data types: CHAR(n), VARCHAR(n), and TEXT
+					CHAR(n) is the fixed-length character with space padded. If you insert a string that is shorter than the length of the column, PostgreSQL pads spaces. If you insert a string that is longer than the length of the column, PostgreSQL will issue an error.
+					 VARCHAR(n) is the variable-length character string.  With VARCHAR(n),  you can store up to n characters. PostgreSQL does not pad spaces when the stored string is shorter than the length of the column.
+					 TEXT is the variable-length character string. Theoretically, text data is a character string with unlimited length.
+
+				Numeric types such as integer and floating-point number.
+					PostgreSQL provides two distinct types of numbers:
+					integers
+					floating-point numbers
+					Integer
+					There are three kinds of integers in PostgreSQL:
+					Small integer ( SMALLINT) is 2-byte signed integer that has a range from -32,768 to 32,767.
+					Integer ( INT) is a 4-byte integer that has a range from -2,147,483,648 to 2,147,483,647.
+					Serial is the same as integer except that PostgreSQL will automatically generate and populate
+					values into the SERIAL column. This is similar to AUTO_INCREMENT column in MySQL or AUTOINCREMENT column in SQLite.
+					Floating-point number
+					There three main types of floating-point numbers:
+					float(n)  is a floating-point number whose precision, at least, n, up to a maximum of 8 bytes.
+					realor float8is a 4-byte floating-point number.
+					numeric or numeric(p,s) is a real number with p digits with s number after the decimal point. The numeric(p,s) is the exact number.
+
+				Temporal types such as date, time, timestamp, and interval
+					The temporal data types allow you to store date and /or  time data. PostgreSQL has five main temporal data types:
+					DATE stores the dates only.
+					TIME stores the time of day values.
+					TIMESTAMP stores both date and time values.
+					TIMESTAMPTZ is a timezone-aware timestamp data type. It is the abbreviation for timestamp with the time zone.
+					INTERVAL stores periods of time.
+					The TIMESTAMPTZ is the PostgreSQL’s extension to the SQL standard’s temporal data types.
+
+				UUID for storing Universally Unique Identifiers
+					The UUID data type allows you to store Universal Unique Identifiers defined by RFC 4122 . 
+					The UUID values guarantee a better uniqueness than SERIAL and can be used to hide sensitive 
+					data exposed to the public such as values of id in URL.
+
+				Array for storing array strings, numbers, etc.
+					In PostgreSQL, you can store an array of strings, an array of integers, etc., in array columns. 
+					The array comes in handy in some situations e.g., storing days of the week, months of the year.
+
+				JSON stores JSON data
+					PostgreSQL provides two JSON data types: JSON and JSONB for storing JSON data.
+					The JSON data type stores plain JSON data that requires reparsing for each processing, while JSONB data type stores JSON data in a binary format
+					 which is faster to process but slower to insert. In addition, JSONB supports indexing, which can be an advantage.
+
+				hstore stores key-value pair
+
+
+				Special types such as network address and geometric data.
+					box– a rectangular box.
+					line – a set of points.
+					point– a geometric pair of numbers.
+					lseg– a line segment.
+					polygon– a closed geometric.
+					inet– an IP4 address.
+					macaddr– a MAC address.
+
+				NOT NULL – the value of the column cannot be NULL.
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+The following are the table constraints:
+
+					UNIQUE (column_list)–  to force the value stored in the columns listed inside the parentheses to be unique.
+					PRIMARY KEY(column_list) – to define the primary key that consists of multiple columns.
+					CHECK (condition) – to check a condition when inserting or updating data.
+					REFERENCES– to constrain the value stored in the column that must exist in a column in another table.
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+			user_id – primary key
+			username – unique and not null
+			password – not null
+			email – unique and not null
+			created_on – not null
+			last_login – null
+			The following statement creates the accounttable:
+
+			CREATE TABLE account(
+				user_id serial PRIMARY KEY,
+				username VARCHAR (50) UNIQUE NOT NULL,
+				password VARCHAR (50) NOT NULL,
+				email VARCHAR (355) UNIQUE NOT NULL,
+				created_on TIMESTAMP NOT NULL,
+				last_login TIMESTAMP
+			);
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/05/postgresql-create-table-example.jpg
+
+			CREATE TABLE role(
+				role_id serial PRIMARY KEY,
+				role_name VARCHAR (255) UNIQUE NOT NULL
+			);
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/05/postgresql-create-table-role-table.jpg
+
+			CREATE TABLE account_role
+			(
+			  user_id integer NOT NULL,
+			  role_id integer NOT NULL,
+			  grant_date timestamp without time zone,
+			  PRIMARY KEY (user_id, role_id),
+			  CONSTRAINT account_role_role_id_fkey FOREIGN KEY (role_id)
+			      REFERENCES role (role_id) MATCH SIMPLE
+			      ON UPDATE NO ACTION ON DELETE NO ACTION,
+			  CONSTRAINT account_role_user_id_fkey FOREIGN KEY (user_id)
+			      REFERENCES account (user_id) MATCH SIMPLE
+			      ON UPDATE NO ACTION ON DELETE NO ACTION
+			);
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/05/postgresql-create-tables-many-to-many.jpg
+
+			>>>>>>>>>>>>> PRIMARY KEY (user_id, role_id)
+
+			>>>>>>>>>>>>> CONSTRAINT account_role_user_id_fkey FOREIGN KEY (user_id)
+					      REFERENCES account (user_id) MATCH SIMPLE
+					      ON UPDATE NO ACTION ON DELETE NO ACTION
+			>>>>>>>>>>>>> CONSTRAINT account_role_role_id_fkey FOREIGN KEY (role_id)
+					      REFERENCES role (role_id) MATCH SIMPLE
+					      ON UPDATE NO ACTION ON DELETE NO ACTION,
+*********************************************************************************************************************************************************
+	ALTER TABLE
+			ALTER TABLE table_name action;
+
+			ALTER TABLE table_name ADD COLUMN new_column_name TYPE;
+
+			ALTER TABLE table_name DROP COLUMN column_name;
+
+			ALTER TABLE table_name RENAME COLUMN column_name TO new_column_name;
+
+			ALTER TABLE table_name ALTER COLUMN column_name [SET DEFAULT value | DROP DEFAULT];
+
+			ALTER TABLE table_name ALTER COLUMN column_name [SET NOT NULL| DROP NOT NULL];
+
+			ALTER TABLE table_name ADD CHECK expression;
+
+			ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint_definition;
+
+			ALTER TABLE table_name RENAME TO new_table_name;
+
+			CREATE TABLE links (
+				link_id serial PRIMARY KEY,
+				title VARCHAR (512) NOT NULL,
+				url VARCHAR (1024) NOT NULL UNIQUE
+			);
+
+			ALTER TABLE links
+			ADD COLUMN active boolean;
+
+			ALTER TABLE links 
+			DROP COLUMN active;
+
+			ALTER TABLE links 
+			RENAME COLUMN title TO link_title;
+
+			ALTER TABLE links 
+			ADD COLUMN target VARCHAR(10);
+
+			ALTER TABLE links 
+			ALTER COLUMN target
+			SET DEFAULT '_blank';
+
+			INSERT INTO links (link_title, url)
+			VALUES('PostgreSQL Tutorial','https://www.postgresqltutorial.com/');
+
+			SELECT * FROM links;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2013/05/PostgreSQL-ALTER-TABLE-SET-DEFAULT.png
+
+			If you try to insert a new row that violates the CHECK constraint set for the targetcolumn, 
+			PostgreSQL will issue an error as shown in the following example:
+			ALTER TABLE links 
+			ADD CHECK (target IN ('_self', '_blank', '_parent', '_top'));
+			INSERT INTO links(link_title,url,target) 
+			VALUES('PostgreSQL','http://www.postgresql.org/','whatever');
+			[Err] ERROR:  new row for relation "links" violates check constraint "links_target_check"
+			DETAIL:  Failing row contains (2, PostgreSQL, http://www.postgresql.org/, whatever).
+
+			ALTER TABLE links 
+			RENAME TO url;
+**********************************************************************************************************
+	DROP TABLE
+
+			DROP TABLE [IF EXISTS] table_name [CASCADE | RESTRICT];
+
+			DROP TABLE author;
+
+			DROP TABLE IF EXISTS author;
+
+			CREATE TABLE author (
+				author_id INT NOT NULL PRIMARY KEY,
+				firstname VARCHAR (50),
+				lastname VARCHAR (50)
+			);
+
+			CREATE TABLE page (
+				page_id serial PRIMARY KEY,
+				title VARCHAR (255) NOT NULL,
+				CONTENT TEXT,
+				author_id INT NOT NULL,
+				FOREIGN KEY (author_id) REFERENCES author (author_id)
+			);
+
+			DROP TABLE IF EXISTS author;
+
+			>>>>> Because the constraint on the pagetable depends on the authortable, PostgreSQL issues an error message.
+
+			>>>>> [Err] ERROR:  cannot drop table author because other objects depend on it
+			>>>>> DETAIL:  constraint page_author_id_fkey on table page depends on table author
+			>>>>> HINT:  Use DROP ... CASCADE to drop the dependent objects too.
+			>>>>> In this case, you need to remove all dependent objects first before removing the authortable or use CASCADE parameter as follows:
+
+			DROP TABLE author CASCADE;
+
+			PostgreSQL removes the authortable as well as the constraint in the pagetable. In addition, it issues a notice:
+
+			NOTICE:  drop cascades to constraint page_author_id_fkey on table page
+*******************************************************************************************************************************************
+	ADD COLUMN
+
+			ALTER TABLE table_name
+			ADD COLUMN new_column_name data_type;
+
+			ALTER TABLE table_name
+			ADD COLUMN new_column_name_1 data_type constraint,
+			ADD COLUMN new_column_name_2 data_type constraint,
+			...
+			ADD COLUMN new_column_name_n data_type constraint;
+
+			CREATE TABLE customers (
+				id SERIAL PRIMARY KEY,
+				customer_name VARCHAR NOT NULL
+			);
+
+			ALTER TABLE customers 
+			ADD COLUMN phone VARCHAR;
+
+			ALTER TABLE customer 
+			ADD COLUMN fax VARCHAR,
+			ADD COLUMN email VARCHAR;
+
+			#\d customers
+			   Table "public.customers"
+			    Column     |       Type        |                       Modifiers
+			---------------+-------------------+--------------------------------------------------------
+			 id            | integer           | not null default nextval('customers_id_seq'::regclass)
+			 customer_name | character varying |
+			 phone         | character varying |
+			 fax           | character varying |
+			 email         | character varying |
+			Indexes:
+			    "customers_pkey" PRIMARY KEY, btree (id)
+
+			INSERT INTO customers (customer_name)
+			VALUES
+				('Apple'),
+				('Samsung'),
+				('Sony');
+
+			ALTER TABLE customers 
+			ADD COLUMN contact_name VARCHAR NOT NULL;
+			ERROR:  column "contact_name" contains null values
+			To solve this problem…
+			First, you need to add the column without the NOT NULL constraint.
+
+			ALTER TABLE customers 
+			ADD COLUMN contact_name VARCHAR;
+
+			UPDATE customers
+			SET contact_name = 'John Doe'
+			WHERE
+				ID = 1;
+
+			UPDATE customers
+			SET contact_name = 'Mary Doe'
+			WHERE
+				ID = 2;
+
+			UPDATE customers
+			SET contact_name = 'Lily Bush'
+			WHERE
+				ID = 3;
+
+			ALTER TABLE customers
+			ALTER COLUMN contact_name SET NOT NULL;
+
+			ALTER TABLE customers
+			ADD COLUMN contact_name NOT NULL DEFAULT 'foo';
+
+			ALTER TABLE customers 
+			ALTER COLUMN contact_name 
+			DROP DEFAULT;
+***************************************************************************************************************
+	DROP COLUMN
+			ALTER TABLE table_name 
+			DROP COLUMN column_name;
+
+			ALTER TABLE table_name 
+			DROP COLUMN column_name CASCADE;
+
+			ALTER TABLE table_name 
+			DROP COLUMN IF EXISTS column_name;
+
+			ALTER TABLE table_name
+			DROP COLUMN column_name_1,
+			DROP COLUMN column_name_2,
+			...;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2017/02/PostgreSQL-DROP-COLUMN-Example-Diagram.png
+
+			CREATE TABLE publishers (
+			    publisher_id serial PRIMARY KEY,
+			    name VARCHAR NOT NULL
+			);
+
+			CREATE TABLE categories (
+			    category_id serial PRIMARY KEY,
+			    name VARCHAR NOT NULL
+			);
+
+			CREATE TABLE books (
+			    book_id serial PRIMARY KEY,
+			    title VARCHAR NOT NULL,
+			    isbn VARCHAR NOT NULL,
+			    published_date DATE NOT NULL,
+			    description VARCHAR,
+			    category_id INT NOT NULL,
+			    publisher_id INT NOT NULL,
+			    FOREIGN KEY (publisher_id) REFERENCES publishers (publisher_id),
+			    FOREIGN KEY (category_id) REFERENCES categories (category_id)
+			);
+
+			CREATE VIEW book_info AS SELECT
+			    book_id,
+			    title,
+			    isbn,
+			    published_date,
+			    name
+			FROM
+			    books b
+			INNER JOIN publishers P ON P .publisher_id = b.publisher_id
+			ORDER BY
+			    title;
+
+			ALTER TABLE books DROP COLUMN category_id;
+
+			test=# \d books;
+			                                     Table "public.books"
+			     Column     |       Type        |                        Modifiers
+			----------------+-------------------+---------------------------------------------------------
+			 book_id        | integer           | not null default nextval('books_book_id_seq'::regclass)
+			 title          | character varying | not null
+			 isbn           | character varying | not null
+			 published_date | date              | not null
+			 description    | character varying |
+			 publisher_id   | integer           | not null
+			Indexes:
+			    "books_pkey" PRIMARY KEY, btree (book_id)
+			Foreign-key constraints:
+			    "books_publisher_id_fkey" FOREIGN KEY (publisher_id) REFERENCES publishers(publisher_id)
+
+			ALTER TABLE books DROP COLUMN publisher_id;
+
+			ERROR:  cannot drop table books column publisher_id because other objects depend on it
+			DETAIL:  view book_info depends on table books column publisher_id
+			HINT:  Use DROP ... CASCADE to drop the dependent objects too.
+
+			ALTER TABLE books DROP COLUMN publisher_id CASCADE;
+			NOTICE:  drop cascades to view book_info
+			ALTER TABLE books 
+			  DROP COLUMN isbn,
+			  DROP COLUMN description;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Joins & Groupings
+	INNER JOIN, OUTER JOINS (LEFT, RIGHT)
+
+			Setting up sample tables
+			Suppose we have two tables called basket_a and basket_b that stores fruits:
+
+			CREATE TABLE basket_a (
+			    id INT PRIMARY KEY,
+			    fruit VARCHAR (100) NOT NULL
+			);
+
+			CREATE TABLE basket_b (
+			    id INT PRIMARY KEY,
+			    fruit VARCHAR (100) NOT NULL
+			);
+
+			INSERT INTO basket_a (id, fruit)
+			VALUES
+			    (1, 'Apple'),
+			    (2, 'Orange'),
+			    (3, 'Banana'),
+			    (4, 'Cucumber');
+
+			INSERT INTO basket_b (id, fruit)
+			VALUES
+			    (1, 'Orange'),
+			    (2, 'Apple'),
+			    (3, 'Watermelon'),
+			    (4, 'Pear');
+
+			SELECT
+			    a.id id_a,
+			    a.fruit fruit_a,
+			    b.id id_b,
+			    b.fruit fruit_b
+			FROM
+			    basket_a a
+			INNER JOIN basket_b b ON a.fruit = b.fruit;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-Inner-Join.png
+
+			SELECT
+			    a.id id_a,
+			    a.fruit fruit_a,
+			    b.id id_b,
+			    b.fruit fruit_b
+			FROM
+			    basket_a a
+			LEFT JOIN basket_b b ON a.fruit = b.fruit;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-left-join-example.png
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-Left-Join.png
+
+			SELECT
+			    a.id id_a,
+			    a.fruit fruit_a,
+			    b.id id_b,
+			    b.fruit fruit_b
+			FROM
+			    basket_a a
+			LEFT JOIN basket_b b ON a.fruit = b.fruit
+			WHERE b.id IS NULL;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-left-join-with-where-example.png
+
+			SELECT
+			    a.id id_a,
+			    a.fruit fruit_a,
+			    b.id id_b,
+			    b.fruit fruit_b
+			FROM
+			    basket_a a
+			RIGHT JOIN basket_b b ON a.fruit = b.fruit;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-right-join-example.png
+
+			SELECT
+			    a.id id_a,
+			    a.fruit fruit_a,
+			    b.id id_b,
+			    b.fruit fruit_b
+			FROM
+			    basket_a a
+			RIGHT JOIN basket_b b ON a.fruit = b.fruit
+			WHERE a.id IS NULL;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-right-join-with-where-example-1.png
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-Right-Join-with-Where.png
+
+			SELECT
+			    a.id id_a,
+			    a.fruit fruit_a,
+			    b.id id_b,
+			    b.fruit fruit_b
+			FROM
+			    basket_a a
+			FULL OUTER JOIN basket_b b ON a.fruit = b.fruit;
+			>>>>>>>>> Note that the OUTER keyword is optional.
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-full-outer-example.png
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-Full-Outer-Join.png
+
+			SELECT
+			    a.id id_a,
+			    a.fruit fruit_a,
+			    b.id id_b,
+			    b.fruit fruit_b
+			FROM
+			    basket_a a
+			FULL JOIN basket_b b ON a.fruit = b.fruit
+				WHERE a.id IS NULL OR b.id IS NULL;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/05/PostgreSQL-join-full-outer-join-with-only-rows-from-each-table.png
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Join-Full-Outer-Join-with-Where.png
+			https://sp.postgresqltutorial.com/wp-content/uploads/2018/12/PostgreSQL-Joins.png
+*********************************************************************************************************************************************
+GROUP BY, SUM, COUNT
+
+			SELECT 
+			   column_1, 
+			   column_2,
+			   aggregate_function(column_3)
+			FROM 
+			   table_name
+			GROUP BY 
+			   column_1,
+			   column_2;
+
+			SELECT
+			   customer_id
+			FROM
+			   payment
+			GROUP BY
+			   customer_id;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/12/PostgreSQL-Group-By-example.png
+
+			SELECT
+				customer_id,
+				SUM (amount)
+			FROM
+				payment
+			GROUP BY
+				customer_id;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/12/PostgreSQL-Group-By-with-SUM.png
+
+			SELECT
+				customer_id,
+				SUM (amount)
+			FROM
+				payment
+			GROUP BY
+				customer_id
+			ORDER BY
+				SUM (amount) DESC;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/12/PostgreSQL-Group-By-and-Order-By.png
+
+			SELECT
+				staff_id,
+				COUNT (payment_id)
+			FROM
+				payment
+			GROUP BY
+				staff_id;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/12/PostgreSQL-Group-By-and-Count.png
+
+			SELECT 
+				customer_id, 
+				staff_id, 
+				SUM(amount) 
+			FROM 
+				payment
+			GROUP BY 
+				staff_id, 
+				customer_id
+			ORDER BY 
+			    customer_id;
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/12/PostgreSQL-Group-By-multiple-columns.png
+
+			SELECT 
+				DATE(payment_date) paid_date, 
+				SUM(amount) sum
+			FROM 
+				payment
+			GROUP BY
+				DATE(payment_date);
+			https://sp.postgresqltutorial.com/wp-content/uploads/2019/12/PostgreSQL-Group-By-dates.png
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Port 5432: The port number used by most database systems; default port for Postgres.
+
+Port 80: The port number most commonly used for HTTP requests. For example, 
+when a client makes a request to a web server, this request is usually sent through port 80.
+
+We interact with databases like Postgres during sessions
+
+Transactions are:
+A: single logical unit of work which accesses and possibly modifies the contents of a database
+
+True/False: a transaction captures a single change done to a database
+A: False
+
+Which SQL statements can be added to a transaction?
+UPDATE, INSERT, DELETE
+
+SELECT, ALTER TABLE, GROUP BY ARE NOT TRANSACTIONS
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+INSTALLING POSTGRES
+		TO CHECK:	which postgres
+
+		INSTALLED:	/usr/local/bin/postgres
+
+				To stop an already initialized postgres server
+					$ pg_ctl -D /usr/local/var/postgres stop
+				to start a postgres server
+					$ pg_ctl -D /usr/local/var/postgres start
+
+Initial installation settings
+The initial installation will:
+
+create an initial database named postgres
+create an initial user named postgres. Your postgres user will have no password set by default.
+create initial databases called template1 and template0. Any other database created after template1 is a clone of template1, 
+including its tables and rows. If you add rows (objects) to template1, they will be copied onto future created databases. template0,
+on the other hand, should stay "pure" and never be changed.
+The default host machine that runs your postgres server, on your machine, is localhost (aka, 127.0.0.1)
+The default port traditionally used to host your server is port 5432. There are very few reasons to use a different port than 5432.
+
+Default connection settings are:
+
+Field	Default Value
+Host	localhost
+Port	5432
+Username	postgres
+Password	(left blank)
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Postgres Command Line Applications
+
+		Log in as a particular user
+		Default installed user is called postgres
+				sudo -u <username> -i
+				e.g. sudo -u bob -i
+
+		Create a new database
+				createdb <database_name>
+				e.g. createdb mydb
+
+		Destroy a database
+				dropdb <database_name>
+				e.g. dropdb mydb
+
+		Reset a database
+				dropdb <database_name> && createdb <database_name>
+				e.g. dropdb mydb && createdb mydb
+
+psql postgres postgres
+
+
+
+
+
+
+
+
+
+
+
+
