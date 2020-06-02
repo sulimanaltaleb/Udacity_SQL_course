@@ -1,0 +1,16 @@
+we'll be gaining proficiency in:
+
+Python 3
+Flask
+PostgresSQL
+psycopg2
+SQLAlchemy
+Flask-SQLAlchemy
+
+To check the version of python running in my machine
+		python --version
+Python 3.7 or later
+		python3 --version
+pip / pip3
+		pip --version
+		pip3 --version
