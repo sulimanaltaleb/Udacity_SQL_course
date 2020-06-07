@@ -1,0 +1,40 @@
+#connecting todo page to postgres server to retrive data from database
+
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask_sqlalchemy import SQLAlchemy
+
+app=Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI']='postgres://amy@localhost:5432/todoapp_development'
+
+db=SQLAlchemy(app)
+
+class Todo(db.Model):
+    __tablename__='todos'
+    id=db.Column(db.Integer, primary_key=True)
+    description=db.Column(db.String(), nullable=False)
+
+    def __repr__(self):
+        return f'<todo {self.id} {self.description}>'
+
+@app.route('/todos/create', methods=['POST'])
+def create_todo():
+    description = request.get_json()['description']
+    todo = Todo(description = description)
+    db.session.add(todo)
+    db.session.commit()
+    return jsonify({
+        'description': todo.description
+    })
+
+
+@app.route('/')
+def index():
+    return render_template('index.html', data = Todo.query.all())
+
+# not seen in the code in the video :(
+# db.create_all()
+
+
+    #To run this application you have to type in terminal
+    # FLASK_APP=app.py FLASK_DEBUG=True flask run
+    # insert into todos(description) values ('Maisa');
