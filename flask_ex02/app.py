@@ -11,4 +11,7 @@ def index():
     },{
         'description' = 'Todo 3'
     }])
-    
+
+
+    #To run this application you have to type in terminal
+    # FLASK_APP=app.py FLASK_DEBUG=True flask run
