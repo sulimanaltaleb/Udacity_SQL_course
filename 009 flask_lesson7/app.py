@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']='postgres://amy@localhost:5432/todoapp_development'
 
-db=SQLAlchemy(app)
+db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
@@ -19,6 +19,19 @@ class Todo(db.Model):
 
     def __repr__(self):
         return f'<todo {self.id} {self.description}>'
+
+@app.route('/todos/<todo_id>/set-completed', methods=['POST'])
+def set_completed_todo(todo_id):
+  try:
+    completed= request.get_json()['completed']
+    todo= Todo.query.get(todo_id)
+    todo.completed= completed
+    db.session.commit()
+  except:
+    db.session.rollback()
+  finally:
+    db.session.close()
+    return redirect(url_for(index.html))
 
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
@@ -41,9 +54,43 @@ def create_todo():
   else:
     return jsonify(body)
 
+""" # @app.route('/todos/<todo_id>/set-deleted', methods=['GET'])
+@app.route('/todos/<todo_id>', methods=['DELETE'])
+def delete_todo(todo_id):
+  try:
+    # deleted= request.get_json()['deleted']
+    # todo= Todo.query.get(todo_id)
+    # db.session.delete(todo)
+    # Todo.query.get(todo_id).delete()
+    Todo.query.filter_by(id=todo_id).delete()
+    db.session.commit()
+  except:
+    db.session.rollback()
+  finally:
+    db.session.close()
+    # return jsonify({ 'success': True })
+    return redirect(url_for(index.html))
+
+    # return redirect(url_for(index.html))
+    # return jsonify(body)
+    # return redirect(url_for(index.html)) """
+
+@app.route('/todos/<todo_id>', methods=['DELETE'])
+def delete_todo(todo_id):
+  try:
+    Todo.query.filter_by(id=todo_id).delete()
+    db.session.commit()
+  except:
+    db.session.rollback()
+  finally:
+    db.session.close()
+    return jsonify({ 'success': True })
+    # return redirect(url_for(index.html))
+
+
 @app.route('/')
 def index():
-    return render_template('index.html', data = Todo.query.all())
+    return render_template('index.html', data = Todo.query.order_by('id').all())
 
 # not seen in the code in the video :(
 # db.create_all()
